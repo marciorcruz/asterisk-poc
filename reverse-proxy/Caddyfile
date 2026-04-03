@@ -1,0 +1,22 @@
+{
+  auto_https disable_redirects
+}
+
+phone.local.lan https://192.168.0.102 {
+  tls internal
+
+  handle /ws {
+    reverse_proxy 127.0.0.1:8088
+  }
+
+  handle /api/* {
+    reverse_proxy 127.0.0.1:8080
+  }
+
+  handle {
+    root * /srv/webphone
+    encode gzip zstd
+    file_server
+    try_files {path} /index.html
+  }
+}

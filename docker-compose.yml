@@ -1,0 +1,51 @@
+services:
+  asterisk:
+    image: andrius/asterisk:22
+    container_name: webphone-asterisk
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./asterisk/config/pjsip.conf:/etc/asterisk/pjsip.conf:ro
+      - ./asterisk/config/pjsip_users.conf:/etc/asterisk/pjsip_users.conf
+      - ./asterisk/config/extensions.conf:/etc/asterisk/extensions.conf:ro
+      - ./asterisk/config/http.conf:/etc/asterisk/http.conf:ro
+      - ./asterisk/config/rtp.conf:/etc/asterisk/rtp.conf:ro
+      - ./asterisk/config/modules.conf:/etc/asterisk/modules.conf:ro
+      - ./asterisk/config/manager.conf:/etc/asterisk/manager.conf:ro
+      - ./asterisk/certs:/etc/asterisk/keys
+    environment:
+      TZ: America/Sao_Paulo
+
+  api:
+    build: ./api
+    container_name: webphone-api
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./data:/data
+      - ./asterisk/config/pjsip_users.conf:/etc/asterisk/pjsip_users.conf
+    environment:
+      DB_PATH: /data/webphone.db
+      AMI_ADDR: 127.0.0.1:5038
+      AMI_USER: webphone
+      AMI_SECRET: webphone123
+      JWT_SECRET: mude-isso-em-producao
+      PJSIP_USERS_CONF: /etc/asterisk/pjsip_users.conf
+      LISTEN: :8080
+    depends_on:
+      - asterisk
+
+  caddy:
+    image: caddy:2.9-alpine
+    container_name: webphone-caddy
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./reverse-proxy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./reverse-proxy/data:/data
+      - ./reverse-proxy/config:/config
+      - ./webphone/dist:/srv/webphone:ro
+    depends_on:
+      - asterisk
+      - api
+
