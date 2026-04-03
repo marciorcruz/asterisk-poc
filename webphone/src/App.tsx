@@ -26,7 +26,7 @@ function formatDuration(seconds: number) {
   return `${m}:${s}`;
 }
 
-const DOMAIN = "pbx.local.lan";
+const DOMAIN = window.location.hostname;
 const WSS = `wss://${window.location.hostname}/ws`;
 const dialPad = [
   ["1", ""],

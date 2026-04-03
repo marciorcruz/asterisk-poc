@@ -1,8 +1,9 @@
 {
   auto_https disable_redirects
+  local_certs
 }
 
-phone.local.lan https://192.168.0.102 {
+https://192.168.31.22 {
   tls internal
 
   handle /ws {
